@@ -179,10 +179,6 @@ func setupBootstrapCluster(config *clusterctl.E2EConfig, useExistingCluster bool
 }
 
 func initBootstrapCluster(bootstrapClusterProxy framework.ClusterProxy, config *clusterctl.E2EConfig, clusterctlConfig, artifactFolder string) {
-	// This deploys azwi webhook. It is important that azwi webhook config gets deployed before capz config as capz
-	// depends on env var and projected service account token volume.
-	// ToDo: @sonasingh46 : deploy azwi as part of init mgmt cluster.
-	deployAzwiWebhook(bootstrapClusterProxy)
 	clusterctl.InitManagementClusterAndWatchControllerLogs(context.TODO(), clusterctl.InitManagementClusterAndWatchControllerLogsInput{
 		ClusterProxy:            bootstrapClusterProxy,
 		ClusterctlConfigPath:    clusterctlConfig,
@@ -198,13 +194,4 @@ func tearDown(bootstrapClusterProvider bootstrap.ClusterProvider, bootstrapClust
 	if bootstrapClusterProvider != nil {
 		bootstrapClusterProvider.Dispose(context.TODO())
 	}
-}
-
-func deployAzwiWebhook(bootstrapClusterProxy framework.ClusterProxy) {
-	path, _ := os.Getwd()
-	yamlBytes, err := os.ReadFile("config/azwi.yaml")
-	Expect(err).To(BeNil(), "failed to read workload identity webhook config: %s: %s", err, path)
-
-	err = bootstrapClusterProxy.Apply(context.TODO(), yamlBytes)
-	Expect(err).To(BeNil(), "failed to deploy workload identity webhook: %s", err)
 }

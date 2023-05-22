@@ -56,6 +56,8 @@ const (
 	AzureClientIDEnvKey = "AZURE_CLIENT_ID"
 	// AzureTenantIDEnvKey is the env key for AZURE_TENANT_ID.
 	AzureTenantIDEnvKey = "AZURE_TENANT_ID"
+	// AzureTokenFilePath is the path of the projected token.
+	AzureTokenFilePath = "/var/run/secrets/azure/tokens/azure-identity-token" // #nosec G101
 )
 
 type workloadIdentityCredential struct {
@@ -94,7 +96,7 @@ func (w *WorkloadIdentityCredentialOptions) WithTenantID(tenantID string) *Workl
 func GetProjectedTokenPath() (string, error) {
 	tokenPath := os.Getenv(AzureFedratedTokenFileEnvKey)
 	if strings.TrimSpace(tokenPath) == "" {
-		return "", errors.New("projected token path not injected")
+		return AzureTokenFilePath, nil
 	}
 	return tokenPath, nil
 }
